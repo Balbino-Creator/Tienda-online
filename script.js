@@ -7,6 +7,9 @@ let numeroPaginas = 1;
 let prevActivo = false;
 let sigActivo = false;
 
+/**
+ * Se encarga de extraer los productos de la API llamandola y de crear las tarjetas de los productos e inmediatamente después, crea la paginación.
+ */
 function cargarPagina(){
     // Llama a la api y recoge todos los datos
     fetch('https://fakestoreapi.com/products')
@@ -57,9 +60,18 @@ function cargarPagina(){
     });
 }
 
+/**
+ * Identifica cual es la ventana modal y la rellena con los datos de los productos
+ * @param {string} title título del producto
+ * @param {string} description descripcion del producto
+ * @param {float} price precio del producto
+ * @param {string} image imagen del producto
+ */
 function verDetalles(title, description, price, image) {
   const detalleProducto = document.getElementById('detalleProducto');
   const tituloModal = document.getElementById('tituloModal');
+
+  // Llena la ventana modal con la información del producto
   detalleProducto.innerHTML = `
     <img src="${image}" class="w-50 mx-auto" alt="${title}">
     <p>${description}</p>
@@ -69,10 +81,17 @@ function verDetalles(title, description, price, image) {
     </svg></a>
   `;
   tituloModal.innerHTML = title;
+
+  // Asigna cual es la ventana modal
   const detalleModal = new bootstrap.Modal(document.getElementById('detalleModal'));
+  // Muestra la ventana
   detalleModal.show();
 }
 
+/**
+ * Generará la cantidad de botones necesarios para la página según la cantidad de productos en pantalla
+ * @param {int} limite Numero máximo de productos que se pueden mostrar
+ */
 function cargarPaginacion(limite){
 
     // Calcula el numero de páginas que tendrá la página
@@ -88,15 +107,18 @@ function cargarPaginacion(limite){
     `;
     let paginacionHTML = '';
 
+    // Crea un boton por cada página de productos
     for(let i = 1; i <= numeroPaginas; i++){
-        paginacionHTML += `<li class="page-item ${paginaActual == i ? 'active' : ''}"><a class="page-link" href="#">${i}</a></li>`;
+        paginacionHTML += `<li class="page-item ${paginaActual == i ? 'active' : ''}" onclick="setPaginaActual(${i})"><a class="page-link" href="#">${i}</a></li>`;
     }
 
     // Añade al HTML los botones para cambiar de página
     paginacion.innerHTML = (paginaActual > 1 ? previousHTML : '') + paginacionHTML + (paginaActual < numeroPaginas ? nextHTML : '');
 }
 
-
+/**
+ * Regresa a la página anterior y cambia los estilos para que se note que el boton ha sido pulsado
+ */
 function paginaAnterior(){
     if(paginaActual > 1){
         paginaActual--;
@@ -106,6 +128,9 @@ function paginaAnterior(){
     cargarPagina();
 }
 
+/**
+ * Avanza a la página siguiente y cambia los estilos para que se note que el boton ha sido pulsado
+ */
 function paginaSiguiente(){
     if(paginaActual < numeroPaginas){
         paginaActual++;
@@ -115,8 +140,13 @@ function paginaSiguiente(){
     cargarPagina();
 }
 
+/**
+ * Actualiza el numero de página al numero proporcionado
+ * @param {int} numero Numero de página
+ */
 function setPaginaActual(numero){
     paginaActual = numero;
+    cargarPagina();
 }
 
 cargarPagina();

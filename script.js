@@ -1,15 +1,33 @@
 const limite = 8;
+let paginaActual = 1;
+let numeroProductos = 0;
+let numeroPaginas = 1;
+
+// Variables para controlar el aspecto de los botones de paginación
+let prevActivo = false;
+let sigActivo = false;
 
 function cargarPagina(){
     // Llama a la api y recoge todos los datos
     fetch('https://fakestoreapi.com/products')
     .then(res => res.json())
     .then(json => {
-        console.log(json);
-        const arrayProductos = json;
+        const arrayJSON = json;
+
+        // Cuenta cuantos productos existen
+        numeroProductos = arrayJSON.length;
+
+        // Cuenta cuantos productos hay que omitir
+        const omitir = (paginaActual - 1) * limite;
+
+        // Elige que elementos se van a mostrar segun la página en la que te encuentres
+        const arrayProductos = arrayJSON.slice(omitir, limite + omitir);
 
         // Busca el contenedor "tarjetas"
         const tarjetas = document.getElementById('tarjetas');
+
+        // Eliminamos su contenido para mantener la página actualizada
+        tarjetas.innerHTML = '';
 
         // Recorre todos los productos capturados por el fetch
         arrayProductos.map(producto => {
@@ -32,8 +50,10 @@ function cargarPagina(){
                     </div>
                 </article>`;
 
+                // Añade las tarjetas al HTML
                 tarjetas.innerHTML += productoHTML;
         });
+        cargarPaginacion(limite);
     });
 }
 
@@ -51,6 +71,52 @@ function verDetalles(title, description, price, image) {
   tituloModal.innerHTML = title;
   const detalleModal = new bootstrap.Modal(document.getElementById('detalleModal'));
   detalleModal.show();
+}
+
+function cargarPaginacion(limite){
+
+    // Calcula el numero de páginas que tendrá la página
+    numeroPaginas = Math.ceil(numeroProductos/limite);
+
+    const paginacion = document.getElementById('paginacion');
+
+    const previousHTML = `
+        <li class="page-item ${prevActivo ? 'active' : 'disabled'}" onclick="paginaAnterior()"><a class="page-link" href="#">Previous</a></li>
+    `;
+    const nextHTML = `
+        <li class="page-item ${sigActivo ? 'active' : 'disabled'}" onclick="paginaSiguiente()"><a class="page-link" href="#">Next</a></li>
+    `;
+    let paginacionHTML = '';
+
+    for(let i = 1; i <= numeroPaginas; i++){
+        paginacionHTML += `<li class="page-item ${paginaActual == i ? 'active' : ''}"><a class="page-link" href="#">${i}</a></li>`;
+    }
+
+    // Añade al HTML los botones para cambiar de página
+    paginacion.innerHTML = (paginaActual > 1 ? previousHTML : '') + paginacionHTML + (paginaActual < numeroPaginas ? nextHTML : '');
+}
+
+
+function paginaAnterior(){
+    if(paginaActual > 1){
+        paginaActual--;
+        prevActivo = true;
+        sigActivo = false;
+    }
+    cargarPagina();
+}
+
+function paginaSiguiente(){
+    if(paginaActual < numeroPaginas){
+        paginaActual++;
+        sigActivo = true;
+        prevActivo = false;
+    }
+    cargarPagina();
+}
+
+function setPaginaActual(numero){
+    paginaActual = numero;
 }
 
 cargarPagina();

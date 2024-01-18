@@ -2,6 +2,8 @@ const limite = 8;
 let paginaActual = 1;
 let numeroProductos = 0;
 let numeroPaginas = 1;
+let categoriaGlobal = '';
+let ascendiente = true;
 
 // Variables para controlar el aspecto de los botones de paginación
 let prevActivo = false;
@@ -12,7 +14,7 @@ let sigActivo = false;
  */
 function cargarPagina(){
     // Llama a la api y recoge todos los datos
-    fetch('https://fakestoreapi.com/products')
+    fetch(`https://fakestoreapi.com/products${categoriaGlobal !== '' ? `/category/${categoriaGlobal}` : ''}${ascendiente ? '?sort=asc' : '?sort=desc'}`)
     .then(res => res.json())
     .then(json => {
         const arrayJSON = json;
@@ -149,4 +151,34 @@ function setPaginaActual(numero){
     cargarPagina();
 }
 
+function cargarCategorias(){
+    const categorias = document.getElementById('categorias');
+
+    fetch('https://fakestoreapi.com/products/categories')
+            .then(res=>res.json())
+            .then(json=> {
+
+                const categoriasJSON = json;
+
+                let categoriasHTML = categorias.innerHTML;
+
+                categoriasJSON.map(categoria =>{
+                    categoriasHTML += `<li onclick="seleccionarCategoria('${categoria}')"><a class="dropdown-item" href="#">${categoria}</a></li>`;
+                })
+
+                categorias.innerHTML = categoriasHTML;
+            })
+}
+
+function seleccionarCategoria(categoria){
+    categoriaGlobal = categoria;
+    cargarPagina();
+}
+
+function setAscendiente(isAsc){
+    isAsc ? ascendiente = true : ascendiente = false;
+    cargarPagina();
+}
+
 cargarPagina();
+cargarCategorias();

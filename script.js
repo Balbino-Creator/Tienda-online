@@ -1,3 +1,8 @@
+// Sesiones
+const usuarios = [['balbino', '1234']];
+const carrito = [];
+let isUsuario = false;
+// Configuración página
 const limite = 8;
 let paginaActual = 1;
 let numeroProductos = 0;
@@ -178,6 +183,27 @@ function seleccionarCategoria(categoria){
 function setAscendiente(isAsc){
     isAsc ? ascendiente = true : ascendiente = false;
     cargarPagina();
+}
+
+function abrirModal(){
+    if(!isUsuario){
+        // Asigna cual es la ventana modal
+        const Modal = new bootstrap.Modal(document.getElementById('loginModal'));
+        // Muestra la ventana
+        Modal.show();
+    }
+}
+
+function comprobarUsuario(){
+    const usuario = document.getElementById('usuarioLogin').value;
+    const password = document.getElementById('passwordLogin').value;
+    for(let i = 0; i < usuarios.length; i++){
+        if(usuarios[i][0] === usuario){
+            if(usuarios[i][1] === password){
+                isUsuario = true;
+            }
+        }
+    }
 }
 
 cargarPagina();

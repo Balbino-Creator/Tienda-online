@@ -1,6 +1,6 @@
 // Sesiones
 const usuarios = [];
-const carrito = [];
+let carrito = [];
 let isUsuario = false;
 let nameUsuario = '';
 // Configuración página
@@ -229,6 +229,7 @@ function abrirModal(){
         if(carritoAbierto){
             irInicio();
         }else{
+            cargarCarrito();
             irCarrito();
         }
     }
@@ -404,6 +405,7 @@ function comprar(title, price){
         } else {
             carrito.push([nameUsuario, [title, price, 1]]);
         }
+        guardarLocalStorage();
         cargarCarrito();
     }
 }
@@ -417,6 +419,9 @@ function cargarCarrito(){
 
     const totalCompraHTML = document.getElementById('totalCompra');
     let totalCompra = 0;
+
+    // Inicializa el carrito desde el almacenamiento local
+    cargarLocalStorage();
 
     listaCompra.innerHTML = '';
 
@@ -450,41 +455,89 @@ function cargarCarrito(){
             </tr>`;
         }
     }
+    totalCompra = totalCompra.toFixed(2);
     totalCompraHTML.innerHTML = `
     <tr>
-        <td colspan="5">${totalCompra}€</td>
+        <td colspan="5">Total: ${totalCompra}€</td>
     </tr>
     `;
+    guardarLocalStorage();
 }
 
 /**
- * Incrementa la cantidad de un producto en el carrito.
- * @param {number} index - Índice del producto en el carrito.
+ * Carga el carrito desde el almacenamiento local.
+ */
+function cargarLocalStorage() {
+    const carritoGuardado = localStorage.getItem('carrito');
+
+    // Verifica si hay un carrito guardado en el almacenamiento local
+    if (carritoGuardado) {
+        carrito = JSON.parse(carritoGuardado);
+        console.log('Desde cargar local storage')
+        console.log(carrito)
+    }
+}
+
+/**
+ * Guarda el carrito actual en el almacenamiento local.
+ */
+function guardarLocalStorage() {
+    // Guarda el carrito en formato JSON en el almacenamiento local
+    localStorage.setItem('carrito', JSON.stringify(carrito));
+}
+
+/**
+ * Incrementa la cantidad de un producto en el carrito y actualiza el almacenamiento local.
+ * @param {int} index - Índice del producto en el carrito.
  */
 function incrementarCantidad(index) {
     carrito[index][1][2]++;
+    guardarLocalStorage();
     cargarCarrito();
 }
 
 /**
- * Decrementa la cantidad de un producto en el carrito.
- * @param {number} index - Índice del producto en el carrito.
+ * Decrementa la cantidad de un producto en el carrito y actualiza el almacenamiento local.
+ * @param {int} index - Índice del producto en el carrito.
  */
 function decrementarCantidad(index) {
     if (carrito[index][1][2] > 1) {
         carrito[index][1][2]--;
+        guardarLocalStorage();
         cargarCarrito();
     }
 }
 
 /**
- * Elimina un producto del carrito.
- * @param {number} index - Índice del producto en el carrito.
+ * Elimina un producto del carrito y actualiza el almacenamiento local.
+ * @param {int} index - Índice del producto en el carrito.
  */
 function eliminarProducto(index) {
     carrito.splice(index, 1);
+    guardarLocalStorage();
     cargarCarrito();
 }
 
+
 cargarPagina();
 cargarCategorias();
+
+// Email
+
+emailjs.init('FjoGymZRqlptYKYtw');
+
+function enviarCorreo() {
+    const templateParams = {
+        to_email: 'bmongar0111@g.educaand.es',
+        to_name: 'Balbino',
+        from_name: 'Simon',
+        message: 'Se ha finalizado el pedido exitosamente'
+    };
+
+    emailjs.send('default', 'template_mqrbvjg', templateParams)
+        .then(function(response) {
+            console.log('Correo electrónico enviado con éxito', response);
+        }, function(error) {
+            console.log('Error al enviar el correo electrónico', error);
+        });
+}

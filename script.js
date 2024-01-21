@@ -1,5 +1,5 @@
 // Sesiones
-const usuarios = [['balbino', '1234']];
+const usuarios = [];
 const carrito = [];
 let isUsuario = false;
 // Configuración página
@@ -156,6 +156,9 @@ function setPaginaActual(numero){
     cargarPagina();
 }
 
+/**
+ * Llama a la API y crea un desplegable con todas las categorias de productos de la FakeStoreAPI
+ */
 function cargarCategorias(){
     const categorias = document.getElementById('categorias');
 
@@ -167,24 +170,37 @@ function cargarCategorias(){
 
                 let categoriasHTML = categorias.innerHTML;
 
+                // Genera todas las categorias
                 categoriasJSON.map(categoria =>{
                     categoriasHTML += `<li onclick="seleccionarCategoria('${categoria}')"><a class="dropdown-item" href="#">${categoria}</a></li>`;
                 })
 
+                // Añade las categorías
                 categorias.innerHTML = categoriasHTML;
             })
 }
 
+/**
+ * Carga la página con la categoria que se ha seleccionado en el filtro
+ * @param {string} categoria Nombre de la categoria
+ */
 function seleccionarCategoria(categoria){
     categoriaGlobal = categoria;
     cargarPagina();
 }
 
+/**
+ * Añade el valor ascendente o descendente a la página según se indique en el parámetro
+ * @param {boolean} isAsc ¿es ascendente?
+ */
 function setAscendiente(isAsc){
     isAsc ? ascendiente = true : ascendiente = false;
     cargarPagina();
 }
 
+/**
+ * Abre la ventana modal del login siempre y cuando no hayas iniciado sesion como usuario
+ */
 function abrirModal(){
     if(!isUsuario){
         // Asigna cual es la ventana modal
@@ -194,16 +210,66 @@ function abrirModal(){
     }
 }
 
-function comprobarUsuario(){
-    const usuario = document.getElementById('usuarioLogin').value;
-    const password = document.getElementById('passwordLogin').value;
-    for(let i = 0; i < usuarios.length; i++){
-        if(usuarios[i][0] === usuario){
-            if(usuarios[i][1] === password){
-                isUsuario = true;
+/**
+ * Abre la ventana modal del registro
+ */
+function abrirModalRegistro(){
+    // Asigna cual es la ventana modal
+    const Modal = new bootstrap.Modal(document.getElementById('registroModal'));
+    // Muestra la ventana
+    Modal.show();
+}
+
+/**
+ * Controla el registro de nuevos usuarios y el inicio de sesion de los mismos
+ * @param {string} modo inicio: el usuario se esta registrando. registro: el usuario se está registrando
+ */
+function comprobarUsuario(modo){
+    if(modo === 'inicio'){
+        const usuario = document.getElementById('usuarioLogin').value;
+        const password = document.getElementById('passwordLogin').value;
+        // Busca al usuario y comprueba si corresponde la contraseña
+        for(let i = 0; i < usuarios.length; i++){
+            if(usuarios[i][0] === usuario){
+                if(usuarios[i][1] === password){
+                    isUsuario = true;
+                    // Cierra el modal
+                    const Modal = new bootstrap.Modal(document.getElementById('loginModal'));
+                    Modal.hide();
+                    break;
+                }
             }
         }
+        if(!isUsuario){
+            console.log('El usuario o la contraseña son incorrectos');
+        }
+    } else if (modo === 'registro'){
+        const usuario = document.getElementById('usuarioRegistro').value;
+        const password = document.getElementById('passwordRegistro').value;
+        if(usuarioExists(usuarios, usuario)){
+            console.log('Este usuario ya existe, no se puede registrar con este nombre');
+        } else {
+            usuarios.push([usuario,password]);
+            // Cierra el modal
+            const Modal = new bootstrap.Modal(document.getElementById('registroModal'));
+            Modal.hide();
+        }
     }
+}
+
+/**
+ * Comprueba si el usuario indicado existe en la lista indicada
+ * @param {array} usuarios Lista de usuarios
+ * @param {string} usuario Nombre de usuario
+ * @returns si existe true y si no false
+ */
+function usuarioExists(usuarios, usuario){
+    usuarios.map(u => {
+        if(u[0] === usuario){
+            return true;
+        }
+    });
+    return false;
 }
 
 cargarPagina();

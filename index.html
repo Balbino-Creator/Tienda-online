@@ -22,7 +22,7 @@
                     <a class="nav-link fs-5 text-center" aria-current="page" href="#">Inicio</a>
                   </li>
                 </ul>
-                <ul class="navbar-nav">
+                <ul class="navbar-nav" id="navUtilidades">
                   <li class="nav-item" onclick="abrirModal()">
                     <a class="nav-link" href="#"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-cart-fill" viewBox="0 0 16 16">
                       <path d="M0 1.5A.5.5 0 0 1 .5 1H2a.5.5 0 0 1 .485.379L2.89 3H14.5a.5.5 0 0 1 .491.592l-1.5 8A.5.5 0 0 1 13 12H4a.5.5 0 0 1-.491-.408L2.01 3.607 1.61 2H.5a.5.5 0 0 1-.5-.5M5 12a2 2 0 1 0 0 4 2 2 0 0 0 0-4m7 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4m-7 1a1 1 0 1 1 0 2 1 1 0 0 1 0-2m7 0a1 1 0 1 1 0 2 1 1 0 0 1 0-2"/>
@@ -116,7 +116,32 @@
                 <label for="passwordLogin" class="form-label">Contraseña</label>
                 <input type="password" class="form-control" id="passwordLogin">
               </div>
-              <a href="#" onclick="comprobarUsuario()" class="btn btn-primary">Iniciar Sesión</a>
+              <a href="#" onclick="abrirModalRegistro()">No tengo cuenta, deseo crear una</a>
+              <a href="#" onclick="comprobarUsuario('inicio')" class="btn btn-primary">Iniciar Sesión</a>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div> <!-- Fin ventana modal -->
+    <!-- Ventana Modal -->
+    <div class="modal fade" id="registroModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h3 class="modal-title">Registrarse</h3>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div>
+            <form class="modal-body d-flex flex-column justify-content-center gap-3 align-items-center">
+              <div class="mb-3">
+                <label for="usuarioRegistro" class="form-label">Usuario:</label>
+                <input type="text" class="form-control" id="usuarioRegistro">
+              </div>
+              <div class="mb-3">
+                <label for="passwordRegistro" class="form-label">Contraseña</label>
+                <input type="password" class="form-control" id="passwordRegistro">
+              </div>
+              <a href="#" onclick="comprobarUsuario('registro')" class="btn btn-primary">Registrarse</a>
             </form>
           </div>
         </div>

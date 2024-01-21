@@ -2,6 +2,7 @@
 const usuarios = [];
 const carrito = [];
 let isUsuario = false;
+let nameUsuario = '';
 // Configuración página
 const limite = 8;
 let paginaActual = 1;
@@ -9,7 +10,7 @@ let numeroProductos = 0;
 let numeroPaginas = 1;
 let categoriaGlobal = '';
 let ascendiente = true;
-
+let carritoAbierto = false;
 // Variables para controlar el aspecto de los botones de paginación
 let prevActivo = false;
 let sigActivo = false;
@@ -18,6 +19,11 @@ let sigActivo = false;
  * Se encarga de extraer los productos de la API llamandola y de crear las tarjetas de los productos e inmediatamente después, crea la paginación.
  */
 function cargarPagina(){
+
+    // Muestra el spinner mientras se cargan los productos
+    const spinner = document.getElementById('spinner');
+    spinner.style.display = 'block';
+
     // Llama a la api y recoge todos los datos
     fetch(`https://fakestoreapi.com/products${categoriaGlobal !== '' ? `/category/${categoriaGlobal}` : ''}${ascendiente ? '?sort=asc' : '?sort=desc'}`)
     .then(res => res.json())
@@ -52,7 +58,7 @@ function cargarPagina(){
                             <p class="card-text">${producto.price} €</p>
                             <div class="d-flex justify-content-between">
                                 <a href="#" class="btn btn-success" onclick="verDetalles('${producto.title}', '${producto.description}', '${producto.price}', '${producto.image}')">Ver más</a>
-                                <a href="#" class="btn btn-primary">Comprar <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-cart-fill" viewBox="0 0 16 16">
+                                <a href="#" class="btn btn-primary" onclick="comprar('${producto.title}', ${producto.price})">Comprar <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-cart-fill" viewBox="0 0 16 16">
                                 <path d="M0 1.5A.5.5 0 0 1 .5 1H2a.5.5 0 0 1 .485.379L2.89 3H14.5a.5.5 0 0 1 .491.592l-1.5 8A.5.5 0 0 1 13 12H4a.5.5 0 0 1-.491-.408L2.01 3.607 1.61 2H.5a.5.5 0 0 1-.5-.5M5 12a2 2 0 1 0 0 4 2 2 0 0 0 0-4m7 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4m-7 1a1 1 0 1 1 0 2 1 1 0 0 1 0-2m7 0a1 1 0 1 1 0 2 1 1 0 0 1 0-2"/>
                             </svg></a>
                             </div>
@@ -63,7 +69,18 @@ function cargarPagina(){
                 // Añade las tarjetas al HTML
                 tarjetas.innerHTML += productoHTML;
         });
+
+        // Oculta el spinner después de cargar los productos
+        spinner.classList = 'd-none';
+
         cargarPaginacion(limite);
+    })
+    .catch(error => {
+        const contenedor = document.getElementById('erroresPagina');
+        mostrarAlerta('Error al cargar los productos', 'alert-danger', contenedor);
+        
+        // Oculta el spinner
+        spinner.classList = 'd-none';
     });
 }
 
@@ -83,7 +100,7 @@ function verDetalles(title, description, price, image) {
     <img src="${image}" class="w-50 mx-auto" alt="${title}">
     <p>${description}</p>
     <p class="fs-3">${price} €</p>
-    <a href="#" class="btn btn-primary">Comprar <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-cart-fill" viewBox="0 0 16 16">
+    <a href="#" onclick="comprar('${title}', ${price})" class="btn btn-primary">Comprar <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-cart-fill" viewBox="0 0 16 16">
         <path d="M0 1.5A.5.5 0 0 1 .5 1H2a.5.5 0 0 1 .485.379L2.89 3H14.5a.5.5 0 0 1 .491.592l-1.5 8A.5.5 0 0 1 13 12H4a.5.5 0 0 1-.491-.408L2.01 3.607 1.61 2H.5a.5.5 0 0 1-.5-.5M5 12a2 2 0 1 0 0 4 2 2 0 0 0 0-4m7 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4m-7 1a1 1 0 1 1 0 2 1 1 0 0 1 0-2m7 0a1 1 0 1 1 0 2 1 1 0 0 1 0-2"/>
     </svg></a>
   `;
@@ -199,7 +216,7 @@ function setAscendiente(isAsc){
 }
 
 /**
- * Abre la ventana modal del login siempre y cuando no hayas iniciado sesion como usuario
+ * Abre la ventana modal del login siempre y cuando no hayas iniciado sesion como usuario o el carrito si la sesion está iniciada
  */
 function abrirModal(){
     if(!isUsuario){
@@ -207,7 +224,38 @@ function abrirModal(){
         const Modal = new bootstrap.Modal(document.getElementById('loginModal'));
         // Muestra la ventana
         Modal.show();
+    } else {
+        // Si es true al pulsar el icono del carrito se ocultará y si es false mostrará el carrito
+        if(carritoAbierto){
+            irInicio();
+        }else{
+            irCarrito();
+        }
     }
+}
+
+/**
+ * Cambia la visualización para ir a la página de inicio.
+ * @description Oculta el carrito y muestra la página de inicio.
+ */
+function irInicio(){
+    const inicio = document.getElementById('inicio');
+    const carrito = document.getElementById('carrito');
+    inicio.className = 'd-block';
+    carrito.className = 'd-none'
+    carritoAbierto = false;
+}
+
+/**
+ * Cambia la visualización para ir a la página del carrito.
+ * @description Oculta la página de inicio y muestra el carrito.
+ */
+function irCarrito(){
+    const inicio = document.getElementById('inicio');
+    const carrito = document.getElementById('carrito');
+    inicio.className = 'd-none';
+    carrito.className = 'd-block'
+    carritoAbierto = true;
 }
 
 /**
@@ -226,35 +274,81 @@ function abrirModalRegistro(){
  */
 function comprobarUsuario(modo){
     if(modo === 'inicio'){
+
         const usuario = document.getElementById('usuarioLogin').value;
         const password = document.getElementById('passwordLogin').value;
+        const contenedor = document.getElementById('alertasLogin');
+
         // Busca al usuario y comprueba si corresponde la contraseña
         for(let i = 0; i < usuarios.length; i++){
             if(usuarios[i][0] === usuario){
                 if(usuarios[i][1] === password){
+
                     isUsuario = true;
+                    nameUsuario = usuario;
+
                     // Cierra el modal
                     const Modal = new bootstrap.Modal(document.getElementById('loginModal'));
                     Modal.hide();
+
+                    // Habilita la opción: Cerrar Sesión
+                    const navUtilidades = document.getElementById('navUtilidades');
+                    const opcion = document.createElement('li');
+                    opcion.id = 'cerrarSesion';
+                    opcion.className = 'nav-item';
+                    opcion.onclick = cerrarSesion;
+                    opcion.innerHTML = '<a class="nav-link fs-5 text-center" aria-current="page" href="#">Cerrar Sesión</a>';
+                    navUtilidades.appendChild(opcion);
+
+                    mostrarAlerta('¡Inicio de sesión exitoso!', 'alert-success', contenedor);
+
                     break;
                 }
             }
         }
         if(!isUsuario){
-            console.log('El usuario o la contraseña son incorrectos');
+            mostrarAlerta('El usuario o la contraseña son incorrectos', 'alert-danger', contenedor);
         }
     } else if (modo === 'registro'){
         const usuario = document.getElementById('usuarioRegistro').value;
         const password = document.getElementById('passwordRegistro').value;
+        const contenedor = document.getElementById('alertasRegistro');
+
         if(usuarioExists(usuarios, usuario)){
-            console.log('Este usuario ya existe, no se puede registrar con este nombre');
+            mostrarAlerta('Este usuario ya existe. No se puede registrar con este nombre.', 'alert-danger', contenedor);
         } else {
             usuarios.push([usuario,password]);
             // Cierra el modal
             const Modal = new bootstrap.Modal(document.getElementById('registroModal'));
             Modal.hide();
+
+            mostrarAlerta('¡Registro exitoso!', 'alert-success', contenedor);
         }
     }
+}
+
+/**
+ * Muestra una alerta en un contenedor específico.
+ * @param {string} mensaje - Mensaje de la alerta.
+ * @param {string} tipo - Tipo de alerta (por ejemplo, 'alert-success' o 'alert-danger').
+ * @param {HTMLElement} contenedor - Contenedor donde se mostrará la alerta.
+ */
+function mostrarAlerta(mensaje, tipo, contenedor) {
+    // Elimina alertas anteriores
+    const alertas = contenedor.querySelectorAll('.alert');
+    alertas.forEach(alerta => alerta.remove());
+
+    // Crea la nueva alerta
+    const alerta = document.createElement('div');
+    alerta.className = `alert ${tipo} mt-3`;
+    alerta.innerHTML = mensaje;
+
+    contenedor.appendChild(alerta);
+
+    // Desaparece la alerta después de 3 segundos
+    setTimeout(() => {
+        alerta.remove();
+    }, 3000);
 }
 
 /**
@@ -270,6 +364,126 @@ function usuarioExists(usuarios, usuario){
         }
     });
     return false;
+}
+
+/**
+ * Cierra la sesión del usuario.
+ * @description Restablece valores de sesión y oculta elementos relacionados con la sesión.
+ */
+function cerrarSesion(){
+    const inicio = document.getElementById('inicio');
+    const carrito = document.getElementById('carrito');
+    const liSesion = document.getElementById('cerrarSesion');
+    // Desabilitamos el boton de cerrar sesion
+    liSesion.className = 'd-none';
+    // Resesteamos valores de sesion
+    isUsuario = false;
+    nameUsuario = '';
+    inicio.className = 'd-block';
+    carrito.className = 'd-none'
+}
+
+/**
+ * Añade un producto al carrito.
+ * @param {string} title - Título del producto.
+ * @param {float} price - Precio del producto.
+ */
+function comprar(title, price){
+    if(!isUsuario){
+        // Asigna cual es la ventana modal
+        const Modal = new bootstrap.Modal(document.getElementById('loginModal'));
+        // Muestra la ventana
+        Modal.show();
+    } else {
+        // Busca si el producto ya está en el carrito
+        const yaExiste = carrito.findIndex(item => item[0] === nameUsuario && item[1][0] === title);
+
+        if (yaExiste !== -1) {
+            // Si el producto ya está en el carrito, incrementa la cantidad
+            carrito[yaExiste][1][2]++;
+        } else {
+            carrito.push([nameUsuario, [title, price, 1]]);
+        }
+        cargarCarrito();
+    }
+}
+
+
+/**
+ * Carga los productos en el carrito y muestra la información en la interfaz.
+ */
+function cargarCarrito(){
+    const listaCompra = document.getElementById('listaCompra');
+
+    const totalCompraHTML = document.getElementById('totalCompra');
+    let totalCompra = 0;
+
+    listaCompra.innerHTML = '';
+
+    for(let i = 0; i < carrito.length; i++){
+        if(carrito[i][0] === nameUsuario){
+
+            const subtotal = carrito[i][1][1] * carrito[i][1][2];
+            totalCompra += subtotal;
+
+            listaCompra.innerHTML += `
+            <tr>
+                <td>${carrito[i][1][0]}</td>
+                <td>${carrito[i][1][1]}€</td>
+                <td>
+                    <svg onclick="decrementarCantidad(${i})" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-dash-circle" style="cursor: pointer;" viewBox="0 0 16 16">
+                        <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
+                        <path d="M4 8a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7A.5.5 0 0 1 4 8"/>
+                    </svg>
+                    ${carrito[i][1][2]}
+                    <svg onclick="incrementarCantidad(${i})" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus-circle" style="cursor: pointer;" viewBox="0 0 16 16">
+                        <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
+                        <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"/>
+                    </svg>
+                </td>
+                <td>${subtotal}€</td>
+                <td onclick="eliminarProducto(${i})" style="cursor: pointer;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash3-fill" viewBox="0 0 16 16">
+                        <path d="M11 1.5v1h3.5a.5.5 0 0 1 0 1h-.538l-.853 10.66A2 2 0 0 1 11.115 16h-6.23a2 2 0 0 1-1.994-1.84L2.038 3.5H1.5a.5.5 0 0 1 0-1H5v-1A1.5 1.5 0 0 1 6.5 0h3A1.5 1.5 0 0 1 11 1.5m-5 0v1h4v-1a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 0-.5.5M4.5 5.029l.5 8.5a.5.5 0 1 0 .998-.06l-.5-8.5a.5.5 0 1 0-.998.06m6.53-.528a.5.5 0 0 0-.528.47l-.5 8.5a.5.5 0 0 0 .998.058l.5-8.5a.5.5 0 0 0-.47-.528M8 4.5a.5.5 0 0 0-.5.5v8.5a.5.5 0 0 0 1 0V5a.5.5 0 0 0-.5-.5"/>
+                    </svg>
+                </td>
+            </tr>`;
+        }
+    }
+    totalCompraHTML.innerHTML = `
+    <tr>
+        <td colspan="5">${totalCompra}€</td>
+    </tr>
+    `;
+}
+
+/**
+ * Incrementa la cantidad de un producto en el carrito.
+ * @param {number} index - Índice del producto en el carrito.
+ */
+function incrementarCantidad(index) {
+    carrito[index][1][2]++;
+    cargarCarrito();
+}
+
+/**
+ * Decrementa la cantidad de un producto en el carrito.
+ * @param {number} index - Índice del producto en el carrito.
+ */
+function decrementarCantidad(index) {
+    if (carrito[index][1][2] > 1) {
+        carrito[index][1][2]--;
+        cargarCarrito();
+    }
+}
+
+/**
+ * Elimina un producto del carrito.
+ * @param {number} index - Índice del producto en el carrito.
+ */
+function eliminarProducto(index) {
+    carrito.splice(index, 1);
+    cargarCarrito();
 }
 
 cargarPagina();

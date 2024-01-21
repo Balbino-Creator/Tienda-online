@@ -524,20 +524,20 @@ cargarCategorias();
 
 // Email
 
-emailjs.init('FjoGymZRqlptYKYtw');
+// emailjs.init('FjoGymZRqlptYKYtw');
 
-function enviarCorreo() {
-    const templateParams = {
-        to_email: 'bmongar0111@g.educaand.es',
-        to_name: 'Balbino',
-        from_name: 'Simon',
-        message: 'Se ha finalizado el pedido exitosamente'
-    };
+// function enviarCorreo() {
+//     const templateParams = {
+//         to_email: 'bmongar0111@g.educaand.es',
+//         to_name: 'Balbino',
+//         from_name: 'Simon',
+//         message: 'Se ha finalizado el pedido exitosamente'
+//     };
 
-    emailjs.send('default', 'template_mqrbvjg', templateParams)
-        .then(function(response) {
-            console.log('Correo electrónico enviado con éxito', response);
-        }, function(error) {
-            console.log('Error al enviar el correo electrónico', error);
-        });
-}
+//     emailjs.send('default', 'template_mqrbvjg', templateParams)
+//         .then(function(response) {
+//             console.log('Correo electrónico enviado con éxito', response);
+//         }, function(error) {
+//             console.log('Error al enviar el correo electrónico', error);
+//         });
+// }
